@@ -1,46 +1,41 @@
 <p align="center">
   <img src="assets/repo-banner.png" alt="EXODUS Banner" width="100%">
-</p>
+  </p>
 
-# 🦠 EXODUS
+  # 🦠 EXODUS
 
-Interactive HTML visualizer exploring the Panspermia Hypothesis through bacterial cell anatomy and astrobiology.
+  ### *Interactive Panspermia & Astrobiology Visualizer*
 
----
+  > Exploring the **Panspermia Hypothesis** through microbial cell anatomy and proposed mechanisms of microbial transfer through space.
 
-## ✨ Features
+  **🦠 Microbiology · 🪐 Astrobiology · 🚀 Panspermia**
 
-* **Panspermia Simulation:** Visualize proposed mechanisms of microbial transfer through space.
-* **Interactive Cell Anatomy:** Explore prokaryotic structures with scientific annotations.
-* **Educational Workflow:** Browser-based interface designed for scientific accuracy.
-* **Responsive Design:** Optimized for desktop and mobile devices.
+  ---
 
----
+  ## ✦ Features
 
-## 🚀 Built With & Hosted On
+  **🧬 Interactive Cell Anatomy**  
+  Explore prokaryotic structures through interactive scientific annotations.
 
-* **Repository:** GitHub
-* **Hosting:** Vercel
+  **🚀 Panspermia Simulation**  
+  Visualize proposed mechanisms of microbial transfer through space.
 
----
+  **🔬 Scientific Visualization**  
+  Built as an educational tool with a focus on biological accuracy.
 
-## 🛠️ Credits & Acknowledgments
+  **📱 Responsive Design**  
+  Designed for both desktop and mobile browsers.
 
-* **Claude Sonnet:** Debugging, code generation & architecture.
-* **Replit:** Code improvisation & rapid prototyping.
-* **OpenAI:** Scientific debugging, testing & logic optimization.
+  ---
 
----
+  ## ⚙️ Technology
 
-## 👤 Author
+  **HTML · CSS · JavaScript · Three.js**
 
-* **Draven Ashcroft**
-  * M.Sc. Ag. Entomology, ASRB NET
-  * DIPS Chain of Institutions
+  **Source:** GitHub · **Hosting:** Vercel
 
----
+  ---
 
-## 📜 License
+  ## 📜 License
 
-GPL-3.0
-.
+  **GNU General Public License v3.0 (GPL-3.0)**
