@@ -43,3 +43,4 @@ Interactive HTML visualizer exploring the Panspermia Hypothesis through bacteria
 ## 📜 License
 
 GPL-3.0
+.
