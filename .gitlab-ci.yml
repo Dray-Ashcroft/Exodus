@@ -1,0 +1,7 @@
+create-pages:
+      script:
+          - mkdir -p public
+              - cp index.html public/
+                pages: true
+                  rules:
+                      - if: '$CI_COMMIT_BRANCH == "main"'
