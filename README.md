@@ -40,7 +40,7 @@ Designed for both desktop and mobile browsers.
 
 **HTML · CSS · JavaScript · Three.js**
 
-**Source:** GitHub  
+**Repository:** GitHub, Codeberg
 **Hosting:** Cloudflare Pages
 
 ---
