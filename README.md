@@ -1,41 +1,45 @@
+<p align="center"> 
+  <img src="assets/repo-banner.png" alt="EXODUS Banner" width="100%"> 
+</p> 
+
+# 🦠 EXODUS
+
+### *Interactive Panspermia & Astrobiology Visualizer*
+
+> Exploring the **Panspermia Hypothesis** through microbial cell anatomy and proposed mechanisms of microbial transfer through space.
+
 <p align="center">
-  <img src="assets/repo-banner.png" alt="EXODUS Banner" width="100%">
-  </p>
+  🌐 <a href="YOUR-CLOUDFLARE-URL"><strong>Live Demo</strong></a>
+</p>
 
-  # 🦠 EXODUS
+**🦠 Microbiology · 🪐 Astrobiology · 🚀 Panspermia**
 
-  ### *Interactive Panspermia & Astrobiology Visualizer*
+---
 
-  > Exploring the **Panspermia Hypothesis** through microbial cell anatomy and proposed mechanisms of microbial transfer through space.
+## ✦ Features
 
-  **🦠 Microbiology · 🪐 Astrobiology · 🚀 Panspermia**
+**🧬 Interactive Cell Anatomy**  
+Explore prokaryotic structures through interactive scientific annotations.
 
-  ---
+**🚀 Panspermia Simulation**  
+Visualize proposed mechanisms of microbial transfer through space.
 
-  ## ✦ Features
+**🔬 Scientific Visualization**  
+Built as an educational tool with a focus on biological accuracy.
 
-  **🧬 Interactive Cell Anatomy**  
-  Explore prokaryotic structures through interactive scientific annotations.
+**📱 Responsive Design**  
+Designed for both desktop and mobile browsers.
 
-  **🚀 Panspermia Simulation**  
-  Visualize proposed mechanisms of microbial transfer through space.
+---
 
-  **🔬 Scientific Visualization**  
-  Built as an educational tool with a focus on biological accuracy.
+## ⚙️ Technology
 
-  **📱 Responsive Design**  
-  Designed for both desktop and mobile browsers.
+**HTML · CSS · JavaScript · Three.js**
 
-  ---
+**Source:** GitHub · **Hosting:** Cloudflare Pages
 
-  ## ⚙️ Technology
+---
 
-  **HTML · CSS · JavaScript · Three.js**
+## 📜 License
 
-  **Source:** GitHub · **Hosting:** Vercel
-
-  ---
-
-  ## 📜 License
-
-  **GNU General Public License v3.0 (GPL-3.0)**
+**GNU General Public License v3.0 (GPL-3.0)**
