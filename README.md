@@ -9,7 +9,7 @@
 > Exploring the **Panspermia Hypothesis** through microbial cell anatomy and proposed mechanisms of microbial transfer through space.
 
 <p align="center">
-  🌐 <a href="YOUR-CLOUDFLARE-URL"><strong>Live Demo</strong></a>
+  🌐 <a href="https://exodus.dray-ashcroft.workers.dev/"><strong>Explore Exodus</strong></a>
 </p>
 
 **🦠 Microbiology · 🪐 Astrobiology · 🚀 Panspermia**
