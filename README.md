@@ -8,11 +8,9 @@
 
 > Exploring the **Panspermia Hypothesis** through microbial cell anatomy and proposed mechanisms of microbial transfer through space.
 
-<p align="center">
-  🌐 <a href="https://exodus.dray-ashcroft.workers.dev/"><strong>Explore Exodus</strong></a>
-</p>
-
 **🦠 Microbiology · 🪐 Astrobiology · 🚀 Panspermia**
+
+**🔬 [Explore Simulation](https://exodus.dray-ashcroft.workers.dev/)**
 
 ---
 
@@ -25,10 +23,16 @@ Explore prokaryotic structures through interactive scientific annotations.
 Visualize proposed mechanisms of microbial transfer through space.
 
 **🔬 Scientific Visualization**  
-Built as an educational tool with a focus on biological accuracy.
+Explore microbial structures and panspermia mechanisms through an educational interactive experience.
 
 **📱 Responsive Design**  
 Designed for both desktop and mobile browsers.
+
+---
+
+## 🧬 Core Concepts
+
+**Panspermia · Microbial Transfer · Prokaryotic Cell Anatomy · Astrobiology · Extremophile Survival · Space Environment**
 
 ---
 
@@ -36,7 +40,8 @@ Designed for both desktop and mobile browsers.
 
 **HTML · CSS · JavaScript · Three.js**
 
-**Source:** GitHub · **Hosting:** Cloudflare Pages
+**Source:** GitHub  
+**Hosting:** Cloudflare Pages
 
 ---
 
