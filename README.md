@@ -1,38 +1,38 @@
-<p align="center"> 
-  <img src="assets/repo-banner.png" alt="EXODUS Banner" width="100%"> 
-</p> 
+<p align="center">
+  <img src="assets/repo-banner.png" alt="EXODUS — Interactive Panspermia & Astrobiology Visualizer" width="100%">
+</p>
 
 # 🦠 EXODUS
 
 ### *Interactive Panspermia & Astrobiology Visualizer*
 
-> Exploring the **Panspermia Hypothesis** through microbial cell anatomy and proposed mechanisms of microbial transfer through space.
+> **EXODUS** is an interactive educational visualization exploring the **Panspermia Hypothesis**, microbial survival under extreme conditions, and proposed mechanisms for the transfer of microorganisms through space.
+>
+> 🦠 **Microbiology** · 🪐 **Astrobiology** · 🚀 **Panspermia** · 🔬 **Extremophile Biology**
 
-**🦠 Microbiology · 🪐 Astrobiology · 🚀 Panspermia**
-
-**🔬 [Explore Simulation](https://exodus.dray-ashcroft.workers.dev/)**
+**🔬 [Explore the Simulation](https://exodus.dray-ashcroft.workers.dev/)**
 
 ---
 
 ## ✦ Features
 
 **🧬 Interactive Cell Anatomy**  
-Explore prokaryotic structures through interactive scientific annotations.
+Explore the structural organization of a **prokaryotic cell** through interactive scientific annotations.
 
-**🚀 Panspermia Simulation**  
-Visualize proposed mechanisms of microbial transfer through space.
+**🚀 Panspermia Mechanisms**  
+Visualize proposed mechanisms of microbial transfer through space and the environmental challenges associated with interplanetary transport.
 
 **🔬 Scientific Visualization**  
-Explore microbial structures and panspermia mechanisms through an educational interactive experience.
+Explore microbiological and astrobiological concepts through an interactive educational experience.
 
-**📱 Responsive Design**  
-Designed for both desktop and mobile browsers.
+**📱 Responsive Interface**  
+Designed for modern **desktop and mobile browsers** with an adaptive interface.
 
 ---
 
 ## 🧬 Core Concepts
 
-**Panspermia · Microbial Transfer · Prokaryotic Cell Anatomy · Astrobiology · Extremophile Survival · Space Environment**
+**Panspermia Hypothesis · Prokaryotic Cell Structure · Microbial Transfer · Extremophile Survival · Space Environment · Astrobiology**
 
 ---
 
@@ -40,11 +40,11 @@ Designed for both desktop and mobile browsers.
 
 **HTML · CSS · JavaScript · Three.js**
 
-**Repository:** GitHub & Codeberg
-**Hosting:** Cloudflare Pages
+**Source:** GitHub & Codeberg  
+**Deployment:** Cloudflare Pages
 
 ---
 
 ## 📜 License
 
-**GNU General Public License v3.0 (GPL-3.0)**
+Distributed under the **GNU General Public License v3.0 (GPL-3.0)**.
