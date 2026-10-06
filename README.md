@@ -10,7 +10,7 @@
 >
 > 🦠 **Microbiology** · 🪐 **Astrobiology** · 🚀 **Panspermia** · 🔬 **Extremophile Biology**
 
-**🔬 [Explore the Simulation](https://exodus.dray-ashcroft.workers.dev/)**
+**🔬 [Explore the Simulation](https://exodus.stark-kodex.workers.dev)**
 
 ---
 
