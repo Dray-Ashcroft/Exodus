@@ -4,16 +4,33 @@
 
 <p align="center">
   <a href="https://exodus.stark-kodex.workers.dev"><strong>Explore the Simulation →</strong></a>
-</p>
+</p>---
+
+✨ Features
+
+- 🧬 Interactive Cell Anatomy — Explore prokaryotic cell structures.
+- 🚀 Panspermia Mechanisms — Visualize proposed microbial transfer through space.
+- 🔬 Scientific Visualization — Explore microbiology and astrobiology concepts.
+- 📱 Responsive Interface — Designed for desktop and mobile browsers.
 
 ---
 
-✨ **Features**
+## 🖼️ Screenshots
 
-- 🧬 Interactive prokaryotic cell anatomy
-- 🚀 Proposed panspermia mechanisms
-- 🔬 Microbial survival and astrobiology concepts
-- 📱 Responsive desktop and mobile interface
+<table>
+  <tr>
+    <th align="center">Before Collision</th>
+    <th align="center">After Collision</th>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <img src="assets/Initial.png" alt="EXODUS — Before Collision" width="85%">
+    </td>
+    <td align="center" width="50%">
+      <img src="assets/Final.png" alt="EXODUS — After Collision" width="85%">
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -25,12 +42,12 @@ Panspermia · Prokaryotic Cell Structure · Extremophile Biology · Microbial Tr
 
 🧑🏻‍💻 **Technology**
 
-🔸HTML · CSS · JavaScript · Three.js
-🔸 Repository: GitHub & Codeberg
-🔸Hosting: Cloudflare Pages
+HTML · CSS · JavaScript · Three.js
+Source: GitHub & Codeberg
+Deployment: Cloudflare Pages
 
 ---
 
 📜 **License**
 
-Distributed under the "GNU GPL-3.0 License" (LICENSE).
+Distributed under the "GNU GPL-3.0 License" (LICENSE). Third-party assets remain subject to their respective licenses.
