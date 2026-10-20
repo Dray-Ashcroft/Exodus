@@ -1,50 +1,36 @@
 <p align="center">
   <img src="assets/repo-banner.png" alt="EXODUS — Interactive Panspermia & Astrobiology Visualizer" width="100%">
+</p><h1 align="center">🦠 EXODUS</h1><h3 align="center"><em>Interactive Panspermia & Astrobiology Visualizer</em></h3>An interactive educational visualization exploring panspermia, microbial survival under extreme conditions, and the proposed transfer of microorganisms through space.
+
+<p align="center">
+  <a href="https://exodus.stark-kodex.workers.dev"><strong>Explore the Simulation →</strong></a>
 </p>
 
-# 🦠 EXODUS
+---
 
-### *Interactive Panspermia & Astrobiology Visualizer*
+✨ **Features**
 
-> **EXODUS** is an interactive educational visualization exploring the **Panspermia Hypothesis**, microbial survival under extreme conditions, and proposed mechanisms for the transfer of microorganisms through space.
->
-> 🦠 **Microbiology** · 🪐 **Astrobiology** · 🚀 **Panspermia** · 🔬 **Extremophile Biology**
-
-**🔬 [Explore the Simulation](https://exodus.stark-kodex.workers.dev)**
+- 🧬 Interactive prokaryotic cell anatomy
+- 🚀 Proposed panspermia mechanisms
+- 🔬 Microbial survival and astrobiology concepts
+- 📱 Responsive desktop and mobile interface
 
 ---
 
-## ✦ Features
+🧬 **Core Concepts**
 
-**🧬 Interactive Cell Anatomy**  
-Explore the structural organization of a **prokaryotic cell** through interactive scientific annotations.
-
-**🚀 Panspermia Mechanisms**  
-Visualize proposed mechanisms of microbial transfer through space and the environmental challenges associated with interplanetary transport.
-
-**🔬 Scientific Visualization**  
-Explore microbiological and astrobiological concepts through an interactive educational experience.
-
-**📱 Responsive Interface**  
-Designed for modern **desktop and mobile browsers** with an adaptive interface.
+Panspermia · Prokaryotic Cell Structure · Extremophile Biology · Microbial Transfer · Astrobiology
 
 ---
 
-## 🧬 Core Concepts
+🧑🏻‍💻 **Technology**
 
-**Panspermia Hypothesis · Prokaryotic Cell Structure · Microbial Transfer · Extremophile Survival · Space Environment · Astrobiology**
-
----
-
-## ⚙️ Technology
-
-**HTML · CSS · JavaScript · Three.js**
-
-**Source:** GitHub & Codeberg  
-**Deployment:** Cloudflare Pages
+🔸HTML · CSS · JavaScript · Three.js
+🔸Source: GitHub & Codeberg
+🔸Deployment: Cloudflare Pages
 
 ---
 
-## 📜 License
+📜 **License**
 
-Distributed under the **GNU General Public License v3.0 (GPL-3.0)**.
+Distributed under the "GNU GPL-3.0 License" (LICENSE).
