@@ -3,10 +3,12 @@
 </p><h1 align="center">🦠 EXODUS</h1><h3 align="center"><em>Interactive Panspermia & Astrobiology Visualizer</em></h3>An interactive educational visualization exploring panspermia, microbial survival under extreme conditions, and the proposed transfer of microorganisms through space.
 
 <p align="center">
-  <a href="https://exodus.stark-kodex.workers.dev"><strong>Explore the Simulation →</strong></a>
-</p>---
+  <a href="https://exodus.stark-kodex.workers.dev"><strong>Explore Exodus →</strong></a>
+</p>
 
-✨ Features
+---
+
+✨ **Features**
 
 - 🧬 Interactive Cell Anatomy — Explore prokaryotic cell structures.
 - 🚀 Panspermia Mechanisms — Visualize proposed microbial transfer through space.
@@ -15,7 +17,7 @@
 
 ---
 
-## 🖼️ Screenshots
+🖼️ **Screenshots**
 
 <table>
   <tr>
