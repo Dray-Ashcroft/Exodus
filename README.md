@@ -26,8 +26,8 @@ Panspermia · Prokaryotic Cell Structure · Extremophile Biology · Microbial Tr
 🧑🏻‍💻 **Technology**
 
 🔸HTML · CSS · JavaScript · Three.js
-🔸Source: GitHub & Codeberg
-🔸Deployment: Cloudflare Pages
+🔸 Repository: GitHub & Codeberg
+🔸Hosting: Cloudflare Pages
 
 ---
 
