@@ -1,0 +1,1405 @@
+:root {
+  --space-bg:#000;
+  --earth-blue:#4a90d9;
+  --earth-green:#2e7d32;
+  --glow-orange:#ff6b35;
+  --transition-fast:.3s;
+  --transition-slow:1s;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  margin:0; overflow:hidden; background:var(--space-bg);
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color:white; text-align:center;
+  height:100vh; width:100vw;
+}
+
+/* ====== CANVAS LAYERS ====== */
+#stars-canvas, #effects-canvas {
+  position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;
+}
+#stars-canvas { z-index:1; }
+#effects-canvas { z-index:5; }
+
+/* ====== EARTH ====== */
+#earth-container {
+  position:absolute; left:50%; top:50%;
+  transform:translate(-50%,-50%) scale(1);
+  z-index:10; transition:transform 2s ease-in-out;
+}
+.earth {
+  position:relative; width:160px; height:160px; border-radius:50%;
+  background: radial-gradient(circle at 30% 30%, #8fd3ff 0%, #4a90d9 20%, #2b6cb0 45%, #123d73 75%, #041b35 100%);
+  box-shadow: inset -20px -20px 60px rgba(0,0,0,.8),
+              inset 10px 10px 30px rgba(255,255,255,.15),
+              0 0 40px rgba(100,180,255,.5),
+              0 0 90px rgba(100,180,255,.25);
+  animation: rotateEarth 60s linear infinite;
+  overflow:hidden;
+}
+.earth::after{
+  content:''; position:absolute; inset:-4%; border-radius:50%;
+  background: radial-gradient(circle, transparent 65%, rgba(120,220,255,.25) 78%, rgba(180,240,255,.15) 85%, transparent 100%);
+  pointer-events:none;
+}
+@keyframes rotateEarth {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Crater */
+.crater {
+  position:absolute; width:38px; height:32px; border-radius:55% 45% 50% 50% / 45% 55% 45% 55%;
+  background:
+    radial-gradient(ellipse at 38% 35%, #000 0%, #050200 30%, #0f0600 55%, transparent 80%),
+    radial-gradient(ellipse at 60% 65%, rgba(40,15,0,0.6) 0%, transparent 60%);
+  box-shadow:
+    inset 3px 4px 12px rgba(0,0,0,1),
+    inset -2px -2px 8px rgba(10,4,0,0.9),
+    inset 0 0 22px rgba(0,0,0,1),
+    0 0 6px rgba(0,0,0,0.8);
+  opacity:0; transform:translate(-50%,-50%) rotate(-12deg);
+  transition:opacity 0.6s ease;
+  pointer-events:none; z-index:15;
+}
+/* Subtle depth rim — no orange glow */
+.crater::before {
+  content:''; position:absolute;
+  inset:-2px;
+  border-radius:55% 45% 50% 50% / 45% 55% 45% 55%;
+  border: 1px solid rgba(60,30,10,0.35);
+  box-shadow: 0 0 6px rgba(0,0,0,0.6);
+}
+/* Shadow cast inside pit for depth */
+.crater::after {
+  content:''; position:absolute;
+  left:30%; top:35%; width:55%; height:50%;
+  border-radius:50%;
+  background: radial-gradient(ellipse at 40% 40%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.85) 100%);
+}
+.crater.active { opacity:1; }
+
+/* ====== MOON ====== */
+#moon-container {
+  position:absolute; left:50%; top:50%; width:40px; height:40px; z-index:5;
+  animation: orbitMoon 20s linear infinite;
+}
+@keyframes orbitMoon {
+  from { transform: translate(-50%,-50%) rotate(0deg) translateX(200px) rotate(0deg); }
+  to { transform: translate(-50%,-50%) rotate(360deg) translateX(200px) rotate(-360deg); }
+}
+.moon {
+  width:100%; height:100%; border-radius:50%;
+  background: radial-gradient(circle at 30% 30%, #e0e0e0 0%, #b0b0b0 50%, #808080 100%);
+  box-shadow: inset -8px -8px 20px rgba(0,0,0,.6), 0 0 20px rgba(255,255,255,.1);
+}
+
+/* ====== HUD RADAR OVERLAY ====== */
+.hud-overlay {
+  position:fixed; top:0; left:0; width:100vw; height:100vh;
+  pointer-events:none; z-index:100; opacity:0; transition:opacity 0.5s ease;
+}
+.hud-overlay.active { opacity:1; }
+/* Moved to bottom-left: the top-right corner is now occupied by the
+   glassmorphism title card, and this HUD only appears during the asteroid
+   approach (before the title card fades for the bacterium view), so the
+   two would otherwise overlap on narrow/mobile screens. */
+.hud-radar {
+  position:absolute; bottom:clamp(20px, 5vh, 50px); left:clamp(20px, 5vw, 50px);
+  width:80px; height:80px; border-radius:50%;
+  border:2px solid rgba(255,100,0,.6); background:rgba(255,100,0,.05);
+}
+.hud-radar::before {
+  content:''; position:absolute; inset:0; border-radius:50%; border:1px solid rgba(255,100,0,.3);
+  animation:radarSweep 2s linear infinite;
+  background:conic-gradient(from 0deg, transparent 0deg, rgba(255,100,0,.4) 60deg, transparent 60deg);
+}
+@keyframes radarSweep {
+  from { transform:rotate(0deg); } to { transform:rotate(360deg); }
+}
+.hud-text {
+  position:absolute; bottom:clamp(110px, 15vh, 140px); left:clamp(20px, 5vw, 50px);
+  font-size:11px; color:rgba(255,100,0,.8); letter-spacing:2px; text-transform:uppercase;
+  animation:hudBlink 1s step-end infinite;
+}
+@keyframes hudBlink { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+/* ====== ATMOSPHERIC ENTRY GLOW ====== */
+.atmospheric-glow {
+  position:absolute; inset:-20px; border-radius:50%;
+  background:radial-gradient(circle, rgba(255,100,0,.6) 0%, rgba(255,60,0,.3) 40%, transparent 70%);
+  opacity:0; transition:opacity 0.3s ease; pointer-events:none; z-index:29;
+  animation:atmospherePulse 0.4s ease-in-out infinite;
+}
+.atmospheric-glow.active { opacity:1; }
+@keyframes atmospherePulse {
+  0%,100% { transform:scale(1); opacity:0.7; }
+  50% { transform:scale(1.15); opacity:1; }
+}
+
+/* trajectory line removed — comet tail is canvas-drawn */
+
+/* ====== ASTEROID ====== */
+#asteroid-container {
+  position: absolute; left: 85vw; top: 10vh; z-index: 30;
+  opacity: 0; transition: opacity var(--transition-fast);
+}
+#asteroid-container.active { opacity: 1; }
+#asteroid {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ffe0a0, #ff6b35 40%, #7a2800);
+  box-shadow: 0 0 18px #ff6b35, 0 0 36px rgba(255,100,0,.5), inset -4px -4px 8px rgba(0,0,0,.5);
+  position: relative; z-index: 1;
+  animation: asteroidSpin 0.6s linear infinite;
+}
+@keyframes asteroidSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Impact flash */
+#impact-flash {
+  position: fixed; width: 10px; height: 10px; border-radius: 50%;
+  background: white; opacity: 0; pointer-events: none; z-index: 100;
+  transform: translate(-50%, -50%);
+}
+
+/* Screen shake */
+.shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+@keyframes shake {
+  0%,100% { transform: translate(-50%,-50%) translate(0,0); }
+  10% { transform: translate(-50%,-50%) translate(-5px,-3px); }
+  20% { transform: translate(-50%,-50%) translate(5px,3px); }
+  30% { transform: translate(-50%,-50%) translate(-4px,5px); }
+  40% { transform: translate(-50%,-50%) translate(4px,-5px); }
+  50% { transform: translate(-50%,-50%) translate(-3px,2px); }
+  60% { transform: translate(-50%,-50%) translate(3px,-2px); }
+  70% { transform: translate(-50%,-50%) translate(-2px,4px); }
+  80% { transform: translate(-50%,-50%) translate(2px,-4px); }
+  90% { transform: translate(-50%,-50%) translate(-1px,1px); }
+}
+
+/* Earth glow after impact */
+.earth-glow {
+  animation: glowPulse 3s ease-in-out infinite;
+  box-shadow: inset -20px -20px 60px rgba(0,0,0,.8), 0 0 60px rgba(255,100,0,.4), 0 0 120px rgba(255,80,0,.2) !important;
+}
+@keyframes glowPulse {
+  0%,100% { filter: hue-rotate(0deg) saturate(1.2); }
+  50% { filter: hue-rotate(10deg) saturate(1.5); }
+}
+
+/* ====== TITLE & BUTTONS ====== */
+
+/* === PREMIUM GLASSMORPHISM TITLE CARD ===
+   Floating frosted-glass panel behind the heading + subtitle.
+   Sits near the top of the scene, clear of the Earth below it.
+   Stars remain visible through the translucent background. */
+.title-card {
+  position:absolute; top:clamp(28px, 5vh, 56px); left:50%;
+  transform:translateX(-50%);
+  width:min(78vw, 720px);
+  min-width:280px;
+  padding:clamp(18px, 3vh, 32px) clamp(20px, 4vw, 48px);
+  border-radius:24px;
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,0.15);
+  box-shadow:
+    0 0 36px rgba(120,180,255,0.10),
+    0 0 0 1px rgba(120,180,255,0.04),
+    0 18px 48px rgba(0,0,0,0.35);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center;
+  z-index:50;
+  opacity:0;
+  animation:titleCardFadeIn 0.8s ease forwards;
+  animation-delay:0.15s;
+}
+@keyframes titleCardFadeIn {
+  from { opacity:0; transform:translate(-50%, -10px); }
+  to   { opacity:1; transform:translate(-50%, 0); }
+}
+.title {
+  font-family:'Space Grotesk', 'Inter', 'Montserrat', sans-serif;
+  font-weight:600;
+  font-size:clamp(22px, 3.2vw, 32px);
+  letter-spacing:6px;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.95);
+  line-height:1.3;
+}
+.subtitle {
+  font-family:'Inter', sans-serif;
+  font-weight:300;
+  font-size:clamp(13px, 1.7vw, 16px);
+  letter-spacing:3px;
+  color:rgba(180,210,255,0.9);
+  margin-top:clamp(12px, 2vh, 18px);
+  line-height:1.4;
+}
+.btn {
+  position:absolute; bottom:10%; left:50%; transform:translateX(-50%);
+  width:44px; height:44px; border-radius:50%; padding:0;
+  border:1px solid rgba(120,200,255,.18);
+  background:rgba(8,18,36,.55);
+  color:rgba(140,210,255,.80);
+  cursor:pointer; z-index:20;
+  font-size:20px; line-height:1;
+  display:flex; justify-content:center; align-items:center;
+  backdrop-filter:blur(12px);
+  box-shadow:0 0 0 1px rgba(120,200,255,.06), 0 0 18px rgba(80,160,255,.10);
+  transition:all var(--transition-fast);
+}
+.btn:hover {
+  background:rgba(12,28,56,.80);
+  border-color:rgba(120,200,255,.45);
+  box-shadow:0 0 0 1px rgba(120,200,255,.12), 0 0 22px rgba(80,160,255,.28);
+  color:rgba(180,230,255,1);
+  transform:translateX(-50%) scale(1.06);
+}
+.btn:active { transform:translateX(-50%) scale(0.95); }
+#investigate-btn { opacity:0; pointer-events:none; transition:opacity var(--transition-fast); display:none; }
+#investigate-btn.visible { opacity:1; pointer-events:all; display:block; }
+
+/* ====== ZOOM OVERLAY ====== */
+.zoom-overlay {
+  position:fixed; top:0; left:0; width:100vw; height:100vh; background:#000;
+  z-index:150; opacity:0; pointer-events:none; transition:opacity var(--transition-slow);
+}
+.zoom-overlay.active { opacity:1; pointer-events:all; }
+
+/* zoom-layers removed — replaced by zoom lens system */
+
+/* ====== BACTERIUM VIEW ====== */
+#bacterium-view {
+  position:fixed; top:0; left:0; width:100vw; height:100vh;
+  background: #080808;
+  display:none; justify-content:center; align-items:center; z-index:200;
+  opacity:0; transition:opacity var(--transition-slow); overflow:hidden;
+}
+
+/* ── ROCK CANVAS ── */
+#rock-canvas {
+  position:absolute; inset:0; width:100%; height:100%;
+  z-index:1; pointer-events:none;
+  opacity:0; transition:opacity 0.5s ease;
+}
+#bacterium-view.active #rock-canvas { opacity:1; }
+
+/* Microscope depth-of-field — soft radial vignette only, no tunnel/oval masks */
+.pore-cavity {
+  position:absolute; left:50%; top:50%;
+  transform:translate(-50%,-50%);
+  width:100vw; height:100vh;
+  border-radius: 0;
+  background: transparent;
+  /* Single soft radial shadow fading from transparent centre to dark edges —
+     mimics microscope objective falloff, not a tunnel */
+  box-shadow: none;
+  /* Use a pseudo-element for the vignette so we don't clip the bacterium */
+  z-index:8; pointer-events:none;
+  opacity:0; transition:opacity 0.6s ease 0.4s;
+}
+#bacterium-view.active .pore-cavity { opacity:1; }
+/* Depth-of-field vignette — radial gradient, centre clear, edges darken gently */
+.pore-cavity::before {
+  content:''; position:absolute; inset:0;
+  border-radius:0;
+  background: radial-gradient(ellipse 62% 58% at 50% 50%,
+    transparent                  0%,
+    transparent                 42%,
+    rgba(0,0,0,.18)             62%,
+    rgba(0,0,0,.48)             78%,
+    rgba(0,0,0,.72)             90%,
+    rgba(0,0,0,.88)            100%);
+  pointer-events:none;
+}
+/* Remove the rocky mineral rim — not needed without the pore conceit */
+.pore-cavity::after { display:none; }
+
+#bacterium-view.active .pore-embed-top,
+#bacterium-view.active .pore-embed-bottom { opacity:0 !important; }
+
+/* Rock-shadow overlays — disabled; replaced by vignette above */
+.pore-embed-top, .pore-embed-bottom {
+  display: none;
+}
+
+#bacterium-view.active { display:flex; opacity:1; }
+
+.bacterium-stage {
+  position:relative; width:100vw; height:100vh;
+  display:flex; justify-content:center; align-items:center;
+  padding:80px 20px 140px 20px; box-sizing:border-box;
+  z-index:5;
+}
+
+/* === BACTERIUM CELL === */
+.bacterium-wrapper {
+  position:relative; width:min(95vw, 600px); height:min(35vw, 220px);
+  display:flex; justify-content:center; align-items:center;
+  padding:20px min(12vw, 60px);
+  z-index:6; background:transparent;
+}
+
+/* ─── BACTERIUM CELL — realistic biological rendering ─────────────────────
+   Think: wet-mount microscopy or TEM cross-section.
+   The cell body is a translucent grey-amber gel, lit from upper-left.
+   NO external glow. NO neon border. NO blue halo.                        */
+.bacterium {
+  position:relative; width:min(70vw, 420px); height:min(23.3vw, 140px);
+  border-radius:min(13.3vw, 80px);
+  /* Translucent cytoplasm — warm grey-amber tint, lit upper-left */
+  background:
+    radial-gradient(ellipse at 32% 30%,
+      rgba(218,208,182,.75)  0%,
+      rgba(172,162,137,.72) 28%,
+      rgba(118,112, 97,.74) 58%,
+      rgba( 68, 62, 54,.82) 82%,
+      rgba( 40, 36, 30,.90) 100%);
+  border:none;
+  box-shadow:
+    /* inner shadow for cell depth / curvature */
+    inset  4px  5px 18px rgba(255,250,235,.14),
+    inset -6px -8px 22px rgba(0,0,0,.55),
+    /* ground shadow so it sits in the rock cavity */
+    0 6px 24px rgba(0,0,0,.70),
+    0 2px  8px rgba(0,0,0,.55);
+  animation:bacteriumFloat 6s ease-in-out infinite;
+  will-change:transform; overflow:visible; z-index:10;
+}
+
+/* Outer cell wall — peptidoglycan layer — strong, clearly visible bacillus outline */
+.bacterium::before {
+  content:''; position:absolute; inset:-3px;
+  border-radius:calc(min(13.3vw, 80px) + 3px);
+  border:2px solid rgba(140,126,95,.88);
+  background:transparent;
+  box-shadow:
+    0 0 0 1px rgba(80,70,48,.45),
+    inset 0 0 4px rgba(0,0,0,.20);
+  pointer-events:none; z-index:5;
+}
+
+/* Plasma membrane — inner boundary, clearly distinct from cell wall */
+.bacterium::after {
+  content:''; position:absolute; inset:5px;
+  border-radius:calc(min(13.3vw, 80px) - 5px);
+  border:1.5px solid rgba(185,170,135,.50);
+  background:transparent;
+  box-shadow:inset 0 0 12px rgba(0,0,0,.28);
+  pointer-events:none; z-index:8;
+}
+
+/* Micro-drift — bacteria in liquid medium, no holographic 3D rotation */
+@keyframes bacteriumFloat {
+  0%,100% { transform:translateY(0px)   translateX(0px); }
+  30%      { transform:translateY(-4px)  translateX(2px); }
+  60%      { transform:translateY(-2px)  translateX(-1px); }
+  80%      { transform:translateY(-6px)  translateX(1px); }
+}
+
+/* === NUCLEOID — tangled chromosomal DNA coil, warm ochre, central region === */
+.nucleoid {
+  position:absolute; left:50%; top:50%;
+  width:130px; height:80px;
+  transform:translate(-50%,-50%);
+  opacity:.92; animation:nucleoidPulse 4s ease-in-out infinite; z-index:7;
+  overflow:visible;
+}
+.nucleoid svg {
+  width:100%; height:100%; overflow:visible;
+}
+/* Strand paths — drawn as SVG, styled here */
+.dna-strand-a { fill:none; stroke:rgba(215,190,82,.80); stroke-width:1.8px; stroke-linecap:round; }
+.dna-strand-b { fill:none; stroke:rgba(180,152,58,.62); stroke-width:1.4px; stroke-linecap:round; }
+.dna-loop     { fill:none; stroke:rgba(200,170,68,.50); stroke-width:1.1px;  stroke-linecap:round; }
+@keyframes nucleoidPulse {
+  0%,100% { transform:translate(-50%,-50%) scale(1);    opacity:.82; }
+  50%      { transform:translate(-50%,-50%) scale(1.03); opacity:.95; }
+}
+
+/* === DNA REPLICATION FORK === */
+.replication-fork {
+  position:absolute; left:65%; top:40%; width:40px; height:30px; z-index:9;
+  opacity:0; transition:opacity 1s ease;
+}
+.replication-fork.active { opacity:1; }
+.replication-fork::before, .replication-fork::after {
+  content:''; position:absolute; width:2px; height:20px;
+  background:linear-gradient(to bottom, rgba(255,255,150,.8), rgba(255,200,80,.6));
+  border-radius:1px; animation:replicationWave 2s ease-in-out infinite;
+}
+.replication-fork::before { left:0; top:0; transform-origin:top center; --rot:-25deg; }
+.replication-fork::after { left:8px; top:0; transform-origin:top center; --rot:25deg; animation-delay:0.2s; }
+@keyframes replicationWave {
+  0%,100% { transform:rotate(var(--rot,0deg)) scaleY(1); }
+  50% { transform:rotate(var(--rot,0deg)) scaleY(1.2); }
+}
+
+/* === RIBOSOMES — small dense granules, warm brown-orange, no neon glow === */
+.ribosome {
+  position:absolute; width:4px; height:4px; border-radius:50%;
+  background: radial-gradient(circle at 35% 35%, #c8955a, #8a5828);
+  box-shadow: 0 1px 3px rgba(0,0,0,.5);
+  z-index:9; animation:ribosomeMove 5s ease-in-out infinite;
+}
+@keyframes ribosomeMove {
+  0%,100% { transform:translate(0,0); }
+  25% { transform:translate(3px,-4px); }
+  50% { transform:translate(-2px,3px); }
+  75% { transform:translate(4px,2px); }
+}
+
+/* === PILI / FIMBRIAE — protein filaments, off-white, no cyan glow === */
+.pili {
+  position:absolute; width:35px; height:1.5px;
+  background: linear-gradient(90deg, rgba(200,190,165,.75), rgba(180,170,145,.25));
+  transform-origin:left center;
+  box-shadow: none;
+  border-radius:1px; z-index:12; animation:piliTwitch 3s ease-in-out infinite;
+}
+@keyframes piliTwitch {
+  0%,100% { transform:rotate(var(--rot,0deg)) scaleX(1); opacity:.7; }
+  50% { transform:rotate(var(--rot,0deg)) scaleX(1.1) translateX(2px); opacity:.95; }
+}
+
+/* === FLAGELLUM — monotrichous polar flagellum emerging from left pole ====
+   SVG is absolutely positioned inside .bacterium (overflow:visible).
+   position: absolute; right:100% places its right edge at the cell's left pole.
+   Width 400px × height 120px in screen pixels — no viewBox scaling confusion.
+   Helix: 6 complete sinusoidal cycles over ~370px, amplitude ±26px.
+   Thin, warm off-white filament. Basal body disc at right edge (attachment). */
+
+#flagellum {
+  position: absolute;
+  /* right edge = left pole of the bacterium */
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 400px;
+  height: 120px;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 20;
+  /* Gentle Brownian drift — pivot at right edge (cell pole) */
+  transform-origin: right center;
+  animation: flagellumDrift 4.8s ease-in-out infinite;
+}
+@keyframes flagellumDrift {
+  0%,100% { transform: translateY(-50%) rotate(0deg); }
+  32%      { transform: translateY(calc(-50% - 3px)) rotate(-1.1deg); }
+  68%      { transform: translateY(calc(-50% + 2px)) rotate(0.7deg); }
+}
+
+/* Main filament stroke */
+.flagellum-path {
+  fill: none;
+  stroke: rgba(186,174,148,.86);
+  stroke-width: 1.3px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 800;
+  stroke-dashoffset: 0;
+  animation: flagellumPropel 2.0s linear infinite;
+}
+
+/* Ghost — simulates the back of the helix, gives 3-D depth */
+.flagellum-path-ghost {
+  fill: none;
+  stroke: rgba(95,85,64,.28);
+  stroke-width: 0.85px;
+  stroke-linecap: round;
+  stroke-dasharray: 800;
+  stroke-dashoffset: 0;
+  animation: flagellumPropel 2.0s linear infinite;
+  animation-delay: -0.5s;
+}
+
+/* Distal tip — covers the far third, fades the filament toward the tip */
+.flagellum-path-tip {
+  fill: none;
+  stroke: rgba(140,128,105,.38);
+  stroke-width: 0.65px;
+  stroke-linecap: round;
+  stroke-dasharray: 800;
+  stroke-dashoffset: 0;
+  animation: flagellumPropel 2.0s linear infinite;
+  animation-delay: -1.0s;
+}
+
+/* Wave — scrolling dashoffset simulates helix rotation */
+@keyframes flagellumPropel {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: -86; }
+}
+
+/* Hook — short curved junction at the basal body */
+.flagellum-hook {
+  fill: none;
+  stroke: rgba(170,156,126,.92);
+  stroke-width: 1.8px;
+  stroke-linecap: round;
+}
+
+/* Speed burst on hotspot click */
+.flagellum-path.burst { animation-duration: 0.42s; }
+
+/* === PULSATING HOTSPOTS === */
+.hotspot {
+  position:absolute; width:14px; height:14px; border-radius:50%;
+  background:radial-gradient(circle, rgba(255,220,100,.9), rgba(255,180,60,.5));
+  box-shadow: 0 0 15px rgba(255,200,80,.6), 0 0 30px rgba(255,180,60,.3);
+  z-index:15; animation:hotspotPulse 2s ease-in-out infinite; cursor:pointer;
+}
+.hotspot::after {
+  content:''; position:absolute; inset:-8px; border-radius:50%;
+  border:1px solid rgba(255,220,100,.3); animation:hotspotRing 2s ease-out infinite;
+}
+@keyframes hotspotPulse {
+  0%,100% { transform:scale(1); opacity:.8; }
+  50% { transform:scale(1.3); opacity:1; }
+}
+@keyframes hotspotRing {
+  0% { transform:scale(0.5); opacity:.8; }
+  100% { transform:scale(2); opacity:0; }
+}
+
+/* === ATP ENERGY PARTICLES === */
+.atp-particle {
+  position:absolute; width:4px; height:4px; border-radius:50%;
+  background:radial-gradient(circle, rgba(255,220,50,.9), rgba(255,180,0,.6));
+  box-shadow:0 0 8px rgba(255,200,50,.6), 0 0 16px rgba(255,180,0,.3);
+  z-index:11; animation:atpFlow 4s linear infinite; pointer-events:none;
+}
+@keyframes atpFlow {
+  0% { transform:translate(0,0) scale(1); opacity:0; }
+  10% { opacity:1; } 90% { opacity:1; }
+  100% { transform:translate(var(--tx,30px), var(--ty,-20px)) scale(0.5); opacity:0; }
+}
+
+/* === MEMBRANE CHANNEL FLASHES === */
+.channel-flash {
+  position:absolute; width:8px; height:3px; border-radius:2px;
+  background:rgba(100,255,200,.8); box-shadow:0 0 10px rgba(100,255,200,.6);
+  z-index:13; opacity:0; animation:channelBlink 3s ease-in-out infinite;
+}
+@keyframes channelBlink {
+  0%,90%,100% { opacity:0; } 5% { opacity:1; } 15% { opacity:0; }
+}
+
+/* === COSMIC DUST === */
+.cosmic-dust {
+  position:fixed; width:3px; height:3px; border-radius:50%;
+  background:rgba(200,220,255,.6); box-shadow: 0 0 6px rgba(180,210,255,.4);
+  pointer-events:none; z-index:186; animation:driftDust 12s linear infinite;
+}
+@keyframes driftDust {
+  0% { transform:translateX(-10vw) translateY(0); opacity:0; }
+  10% { opacity:.8; } 90% { opacity:.8; }
+  100% { transform:translateX(110vw) translateY(-30px); opacity:0; }
+}
+
+/* === BACKGROUND PARTICLES === */
+.bg-particle {
+  position:fixed; border-radius:50%; background:rgba(160,200,255,.3);
+  pointer-events:none; z-index:186; animation:floatParticle 10s ease-in-out infinite;
+}
+@keyframes floatParticle {
+  0%,100% { transform:translate(0,0); opacity:.3; }
+  50% { transform:translate(10px,-15px); opacity:.6; }
+}
+
+/* === SEM MICROSCOPE MODE === */
+.sem-overlay {
+  position:fixed; top:0; left:0; width:100vw; height:100vh;
+  pointer-events:none; z-index:185; opacity:0; transition:opacity 1s ease;
+}
+.sem-overlay.active { opacity:1; }
+.sem-grid {
+  position:absolute; inset:0;
+  background-image: linear-gradient(rgba(160,220,240,.025) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(160,220,240,.025) 1px, transparent 1px);
+  background-size:50px 50px;
+}
+.sem-vignette {
+  position:absolute; inset:0;
+  background:radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,.6) 85%, rgba(0,0,0,.9) 100%);
+}
+.sem-chromatic {
+  position:absolute; inset:-5px;
+  background:radial-gradient(ellipse at 45% 50%, rgba(255,0,0,.03) 0%, transparent 50%),
+              radial-gradient(ellipse at 55% 50%, rgba(0,0,255,.03) 0%, transparent 50%);
+  pointer-events:none;
+}
+
+/* ── EM grain noise canvas ──
+   Sits inside .sem-overlay so it inherits the overlay opacity fade-in.
+   mix-blend-mode:overlay lets grain brighten light areas and darken
+   dark ones — how TEM/SEM detector noise actually behaves. */
+#em-grain-canvas {
+  position:absolute; inset:0; width:100%; height:100%;
+  pointer-events:none; opacity:0.13;
+  mix-blend-mode: overlay;
+}
+.sem-mag-counter {
+  position:absolute; top:clamp(20px, 5vh, 50px); left:clamp(20px, 5vw, 50px);
+  font-size:clamp(12px, 2vw, 16px); color:rgba(160,220,240,.18); letter-spacing:2px;
+  font-family:'Courier New', monospace;
+}
+.sem-focus-ring {
+  display: none; /* outer rounded rectangle removed — bacterium is the primary silhouette */
+}
+@keyframes focusPulse {
+  0%,100% { border-color:rgba(180,165,130,.10); box-shadow:none; }
+  50%      { border-color:rgba(180,165,130,.28); box-shadow:none; }
+}
+
+/* === Clickable labels === */
+.label-container {
+  position:absolute; z-index:50; cursor:pointer; pointer-events:all;
+}
+.label-dot {
+  width:clamp(8px, 1.5vw, 14px); height:clamp(8px, 1.5vw, 14px); border-radius:50%;
+  background:rgba(160,220,240,.18); border:2px solid rgba(160,220,240,.27);
+  box-shadow: 0 0 10px rgba(100,190,210,.15), 0 0 20px rgba(100,190,210,.09);
+  animation:labelPulse 2s ease-in-out infinite; transition:all var(--transition-fast);
+}
+.label-container:hover .label-dot {
+  background:rgba(160,220,240,.27);
+  box-shadow: 0 0 15px rgba(100,190,210,.24), 0 0 30px rgba(100,190,210,.15);
+  transform:scale(1.3);
+}
+@keyframes labelPulse {
+  0%,100% { transform:scale(1); opacity:.8; }
+  50% { transform:scale(1.2); opacity:1; }
+}
+.label-line {
+  position:absolute; height:1.5px;
+  background: linear-gradient(90deg, rgba(160,220,240,.24), rgba(160,220,240,.09));
+  transform-origin:left center; opacity:0; transition:opacity 0.4s ease, width 0.4s ease;
+  pointer-events:none;
+}
+.label-text {
+  position:absolute; font-size:clamp(11px, 1.8vw, 15px); color:#a0e0f0; white-space:nowrap;
+  opacity:0; transition:opacity 0.4s ease, transform 0.4s ease;
+  background:rgba(5,15,30,.7); padding:4px 10px; border-radius:6px;
+  border:1px solid rgba(160,220,240,.09); backdrop-filter:blur(5px);
+  pointer-events:none; transform:translateX(-10px);
+}
+.label-container.active .label-line { opacity:1; }
+.label-container.active .label-text { opacity:1; transform:translateX(0); }
+
+/* ── LABEL ANCHOR RULES ────────────────────────────────────────────────────
+   All % are relative to .bacterium-wrapper (≈600×220px desktop).
+   Bacterium body: x 10%–80%, y 18%–82%, centre 45%×50%.
+   Dot size ≈ 11px; subtract ~1% from each axis so the dot CENTRE
+   lands exactly on the target structure, not beside it.
+
+   Layout convention per label:
+     Left-side labels  → text appears to the LEFT  (right-anchored)
+     Right-side labels → text appears to the RIGHT (left-anchored)
+     Top/bottom labels → text appears above/below  (centred)
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* ── CELL WALL ──────────────────────────────────────────────────────────────
+   Target: the OUTER wall arc, upper-left of bacterium.
+   Bacterium left edge = 15% wrapper-x (bact_x0=90px/600px).
+   At 30% wrapper-y, border-radius=80px creates ~21px inset → wall rim at 18.5%.
+   Dot at (18%, 30%) sits on the outer peptidoglycan rim. */
+.label-cellwall { top:30%; left:18%; }
+.label-cellwall .label-line {
+  width:48px; height:1.5px;
+  top:50%; left:0;
+  transform:translateY(-50%) translateX(-100%);
+  background:linear-gradient(90deg, rgba(160,220,240,.09), rgba(160,220,240,.24));
+}
+.label-cellwall .label-text {
+  top:50%; right:calc(100% + 52px);
+  transform:translateY(-50%);
+  white-space:nowrap;
+}
+.label-cellwall.active .label-text { opacity:1; transform:translateY(-50%); }
+
+/* ── PLASMA MEMBRANE ────────────────────────────────────────────────────────
+   Target: the inner membrane boundary, lower-left arc.
+   ~8px inside the outer wall. At 65% wrapper-y, left arc: ~14% wrapper-x.
+   Dot at (14%, 65%) sits on the inner membrane line.                        */
+.label-membrane { top:65%; left:14%; }
+.label-membrane .label-line {
+  width:44px; height:1.5px;
+  top:50%; left:0;
+  transform:translateY(-50%) translateX(-100%);
+  background:linear-gradient(90deg, rgba(160,220,240,.09), rgba(160,220,240,.24));
+}
+.label-membrane .label-text {
+  top:50%; right:calc(100% + 48px);
+  transform:translateY(-50%);
+  white-space:nowrap;
+}
+.label-membrane.active .label-text { opacity:1; transform:translateY(-50%); }
+
+/* ── CYTOPLASM ──────────────────────────────────────────────────────────────
+   Target: open cytoplasm, left lobe, well inside the membrane.
+   At ~20% wrapper-x, 50% wrapper-y — clear interior space left of nucleoid. */
+.label-cytoplasm { top:49%; left:20%; }
+.label-cytoplasm .label-line {
+  width:40px; height:1.5px;
+  top:50%; left:0;
+  transform:translateY(-50%) translateX(-100%);
+  background:linear-gradient(90deg, rgba(160,220,240,.09), rgba(160,220,240,.24));
+}
+.label-cytoplasm .label-text {
+  top:50%; right:calc(100% + 44px);
+  transform:translateY(-50%);
+  white-space:nowrap;
+}
+.label-cytoplasm.active .label-text { opacity:1; transform:translateY(-50%); }
+
+/* ── NUCLEOID ───────────────────────────────────────────────────────────────
+   Target: centre of the DNA coil mass inside the bacterium.
+   Nucleoid div: left:50%, top:50% of bacterium → wrapper centre at (50%, 50%).
+   Dot container at (49%, 48%) so dot centre (49.9%, 50.5%) lands on DNA tangle. */
+.label-nucleoid { top:48%; left:49%; }
+.label-nucleoid .label-line {
+  width:2px; height:20px;
+  top:100%; left:50%;
+  transform:translateX(-50%);
+  background:linear-gradient(to bottom, rgba(160,220,240,.24), rgba(160,220,240,.09));
+}
+.label-nucleoid .label-text {
+  top:calc(100% + 24px); left:50%;
+  transform:translateX(-50%);
+  white-space:nowrap;
+}
+.label-nucleoid.active .label-text { opacity:1; transform:translateX(-50%); }
+
+/* ── RIBOSOME ───────────────────────────────────────────────────────────────
+   Target: the guaranteed anchor ribosome at bacterium left:82%, top:15%.
+   In wrapper: (90 + 0.82×420)/600 = 72.4%x, (40 + 0.15×140)/220 = 27.7%y.
+   Dot container at (71%, 25%) so dot centre lands directly on anchor granule. */
+.label-ribosome { top:25%; left:71%; }
+.label-ribosome .label-line {
+  width:40px; height:1.5px;
+  top:50%; left:100%;
+  transform:translateY(-50%);
+  background:linear-gradient(90deg, rgba(160,220,240,.24), rgba(160,220,240,.09));
+}
+.label-ribosome .label-text {
+  top:50%; left:calc(100% + 44px);
+  transform:translateY(-50%);
+  white-space:nowrap;
+}
+.label-ribosome.active .label-text { opacity:1; transform:translateY(-50%); }
+
+/* ── FLAGELLUM ──────────────────────────────────────────────────────────────
+   Target: the flagellum hook just outside the bacterium's left pole.
+   The hook/base (#flagellum) is positioned at left:-60px relative to the
+   bacterium, which sits at 10% of the wrapper (~60px from left edge).
+   Hook base in wrapper coords ≈ 3–6% x, 48–52% y — always visible.
+   Dot placed at (5%, 49%) on the hook; line extends rightward to stay in view. */
+.label-flagella { top:49%; left:5%; }
+.label-flagella .label-line {
+  width:36px; height:1.5px;
+  top:50%; left:100%; bottom:auto;
+  transform:translateY(-50%);
+  background:linear-gradient(90deg, rgba(160,220,240,.24), rgba(160,220,240,.09));
+}
+.label-flagella .label-text {
+  top:50%; left:calc(100% + 40px); right:auto; bottom:auto;
+  transform:translateY(-50%) translateX(-10px);
+  white-space:nowrap;
+}
+.label-flagella.active .label-text { opacity:1; transform:translateY(-50%) translateX(0); }
+
+/* ── FLAGELLUM (MOBILE) ───────────────────────────────────────────────────
+   On very small screens, push the text label max-width tighter so it doesn't
+   overflow the right edge. The dot stays at left:5% which is already safe. */
+@media (max-width: 480px) {
+  .label-flagella .label-text {
+    white-space:normal; max-width:48vw; text-align:left;
+  }
+}
+
+/* ── GLOBAL MOBILE LABEL GUARDS ─────────────────────────────────────────
+   Prevent any label text from exceeding 55vw and ensure left-side texts
+   don't push off the left edge.  Cards are handled by JS clamping. */
+@media (max-width: 600px) {
+  .label-text {
+    max-width: 52vw !important;
+    white-space: normal !important;
+  }
+  /* Left-side labels: shift text to not run past screen left */
+  .label-cellwall .label-text,
+  .label-membrane .label-text,
+  .label-cytoplasm .label-text,
+  .label-plasmid-1 .label-text {
+    right: auto !important;
+    left: calc(100% + 44px) !important;
+    transform: translateY(-50%) translateX(-10px) !important;
+  }
+  .label-cellwall.active .label-text,
+  .label-membrane.active .label-text,
+  .label-cytoplasm.active .label-text,
+  .label-plasmid-1.active .label-text {
+    transform: translateY(-50%) translateX(0) !important;
+  }
+}
+
+/* ── PILI ───────────────────────────────────────────────────────────────────
+   Target: the anchor pilus at bacterium bottom-centre (left:50%, top:100%).
+   In wrapper: (90 + 210)/600 = 50%x, (40 + 140)/220 = 81.8%y.
+   Dot container at (49%, 79%) so dot centre (49.9%, 81.5%) sits on pili base. */
+.label-pili { top:79%; left:49%; }
+.label-pili .label-line {
+  width:2px; height:18px;
+  bottom:100%; left:50%;
+  transform:translateX(-50%);
+  background:linear-gradient(to top, rgba(160,220,240,.24), rgba(160,220,240,.09));
+}
+.label-pili .label-text {
+  bottom:calc(100% + 22px); left:50%;
+  transform:translateX(-50%);
+  white-space:nowrap;
+}
+.label-pili.active .label-text { opacity:1; transform:translateX(-50%); }
+
+/* === PLASMID DNA RINGS — small circular loops near cytoplasm edges === */
+.plasmid-ring {
+  position:absolute;
+  z-index:8;
+  pointer-events:none;
+  animation:plasmidSpin 12s linear infinite;
+  opacity:.82;
+}
+.plasmid-ring svg { overflow:visible; }
+/* Each ring rotates at slightly different speed/direction for organic feel */
+/* Plasmids positioned peripherally — near cytoplasm edges, away from central nucleoid */
+.plasmid-ring-1 { width:22px; height:22px; left:8%;   top:20%;  animation-duration:14s; animation-direction:normal; }
+.plasmid-ring-2 { width:18px; height:18px; left:76%;  top:58%;  animation-duration:18s; animation-direction:reverse; }
+.plasmid-ring-3 { width:20px; height:20px; left:70%;  top:16%;  animation-duration:11s; animation-direction:normal; }
+
+@keyframes plasmidSpin {
+  from { transform:rotate(0deg); }
+  to   { transform:rotate(360deg); }
+}
+
+/* ── PLASMID LABELS ─────────────────────────────────────────────────────────
+   Each label dot sits on the centre of its spinning plasmid ring.
+   Ring positions are % of .bacterium (420×140px). Wrapper is 600×220px.
+   Bacterium top-left in wrapper: x=90px (15%), y=40px (18.2%).
+   Formula: wrapper% = (90 + ring_left%×420 + size/2) / 600  (x)
+                       (40 + ring_top%×140  + size/2) / 220  (y)
+   Container offset = ring_centre - dot_half (5.5px).
+
+   Ring-1 (left:8%,top:20%,size:22px): centre=(90+33.6+11, 40+28+11)=(134.6,79)px
+     → wrapper: 22.4%x, 35.9%y → container (22%, 33%)
+   Ring-2 (left:76%,top:58%,size:18px): centre=(90+319.2+9, 40+81.2+9)=(418.2,130.2)px
+     → wrapper: 69.7%x, 59.2%y → container (69%, 57%)
+   Ring-3 (left:70%,top:16%,size:20px): centre=(90+294+10, 40+22.4+10)=(394,72.4)px
+     → wrapper: 65.7%x, 32.9%y → container (65%, 30%)  */
+
+.label-plasmid-1 { top:33%; left:22%; }
+.label-plasmid-1 .label-line {
+  width:38px; height:1.5px;
+  top:50%; left:0;
+  transform:translateY(-50%) translateX(-100%);
+  background:linear-gradient(90deg, rgba(160,220,240,.09), rgba(160,220,240,.24));
+}
+.label-plasmid-1 .label-text {
+  top:50%; right:calc(100% + 42px);
+  transform:translateY(-50%);
+  white-space:nowrap;
+}
+.label-plasmid-1.active .label-text { opacity:1; transform:translateY(-50%); }
+
+.label-plasmid-2 { top:57%; left:69%; }
+.label-plasmid-2 .label-line {
+  width:38px; height:1.5px;
+  top:50%; left:100%;
+  transform:translateY(-50%);
+  background:linear-gradient(90deg, rgba(160,220,240,.24), rgba(160,220,240,.09));
+}
+.label-plasmid-2 .label-text {
+  top:50%; left:calc(100% + 42px);
+  transform:translateY(-50%);
+  white-space:nowrap;
+}
+.label-plasmid-2.active .label-text { opacity:1; transform:translateY(-50%); }
+
+.label-plasmid-3 { top:30%; left:65%; }
+.label-plasmid-3 .label-line {
+  width:38px; height:1.5px;
+  top:50%; left:100%;
+  transform:translateY(-50%);
+  background:linear-gradient(90deg, rgba(160,220,240,.24), rgba(160,220,240,.09));
+}
+.label-plasmid-3 .label-text {
+  top:50%; left:calc(100% + 42px);
+  transform:translateY(-50%);
+  white-space:nowrap;
+}
+.label-plasmid-3.active .label-text { opacity:1; transform:translateY(-50%); }
+
+/* === INFO CARD (shown on hotspot tap) === */
+#hotspot-info-card {
+  position: fixed;
+  z-index: 260;
+  background: rgba(5, 15, 30, 0.92);
+  border: 1px solid rgba(160, 220, 240, 0.12);
+  border-radius: 12px;
+  padding: 14px 18px;
+  min-width: 180px;
+  max-width: min(clamp(220px, 55vw, 320px), calc(100vw - 24px));
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 24px rgba(100, 190, 210, 0.06), 0 4px 20px rgba(0,0,0,0.7);
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.88) translateY(6px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+#hotspot-info-card.visible {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: all;
+}
+#hotspot-info-card .card-name {
+  font-size: clamp(13px, 2.2vw, 16px);
+  font-weight: 600;
+  color: #c8d8e0;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+#hotspot-info-card .card-desc {
+  font-size: clamp(11px, 1.8vw, 13px);
+  color: rgba(180, 210, 225, 0.65);
+  line-height: 1.55;
+}
+#hotspot-info-card .card-close {
+  position: absolute;
+  top: 8px; right: 10px;
+  font-size: 14px;
+  color: rgba(160,220,240,0.15);
+  cursor: pointer;
+  pointer-events: all;
+  line-height: 1;
+  transition: color 0.2s;
+}
+#hotspot-info-card .card-close:hover { color: rgba(160,220,240,.45); }
+
+/* === Typewriter === */
+.typewriter-container {
+  position:absolute; bottom:clamp(40px, 8vh, 100px); left:50%; transform:translateX(-50%);
+  width:clamp(280px, 80vw, 700px); text-align:center; z-index:210;
+}
+.typewriter-text {
+  font-size:clamp(14px, 2.5vw, 20px); line-height:1.6; color:#8aacbe; min-height:3em;
+  text-shadow: 0 0 10px rgba(160,208,255,.09);
+}
+.cursor {
+  display:inline-block; width:2px; height:1.2em; background:#8aacbe; margin-left:2px;
+  animation:blink 1s step-end infinite; vertical-align:text-bottom;
+}
+@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
+
+/* === Scale === */
+.scale-bar {
+  position:absolute; bottom:clamp(20px, 4vh, 40px); right:clamp(20px, 4vw, 40px);
+  display:flex; align-items:center; gap:8px; opacity:0; transition:opacity var(--transition-slow); z-index:210;
+}
+.scale-bar.visible { opacity:1; }
+.scale-line { width:60px; height:2px; background:rgba(160,208,255,.15); }
+.scale-text { font-size:clamp(10px, 1.5vw, 12px); color:rgba(160,208,255,.18); }
+
+/* === GUIDED TOUR ARROWS === */
+.tour-arrow {
+  position:absolute; z-index:220; opacity:0; transition:opacity 0.5s ease, transform 0.5s ease;
+  pointer-events:none;
+}
+.tour-arrow.active { opacity:1; }
+.tour-arrow::before { content:''; position:absolute; width:0; height:0; border-style:solid; }
+.tour-arrow.down::before { border-width:12px 8px 0 8px; border-color:rgba(255,220,100,.9) transparent transparent transparent; }
+.tour-arrow.up::before { border-width:0 8px 12px 8px; border-color:transparent transparent rgba(255,220,100,.9) transparent; }
+.tour-arrow.left::before { border-width:8px 12px 8px 0; border-color:transparent rgba(255,220,100,.9) transparent transparent; }
+.tour-arrow.right::before { border-width:8px 0 8px 12px; border-color:transparent transparent transparent rgba(255,220,100,.9); }
+.tour-bubble {
+  position:absolute; background:rgba(5,15,30,.85); border:1px solid rgba(160,220,240,.09);
+  border-radius:10px; padding:10px 16px; color:#8ab8c8;
+  font-size:clamp(12px, 2vw, 15px); white-space:nowrap;
+  backdrop-filter:blur(10px); box-shadow:0 0 20px rgba(100,190,210,.06);
+  animation:bubblePulse 2s ease-in-out infinite; z-index:220;
+}
+@keyframes bubblePulse {
+  0%,100% { box-shadow:0 0 20px rgba(100,190,210,.06); }
+  50% { box-shadow:0 0 30px rgba(100,190,210,.12); }
+}
+
+/* === ACCESSIBILITY TOGGLE === */
+/* ====== BACTERIUM VIEW ICON CONTROLS (top-right stack) ======
+   All four buttons share the same 36px circle glassmorphism style.
+   Individual top offsets space them 12px apart. */
+.bact-icon-btn {
+  position:fixed; right:clamp(16px, 4vw, 32px);
+  z-index:250; width:36px; height:36px; border-radius:50%; padding:0;
+  border:1px solid rgba(120,200,255,.14);
+  background:rgba(8,18,36,.50);
+  color:rgba(120,200,255,.55);
+  cursor:pointer; font-size:16px; line-height:1;
+  display:flex; justify-content:center; align-items:center;
+  backdrop-filter:blur(14px);
+  box-shadow:0 0 0 1px rgba(120,200,255,.05), 0 0 14px rgba(60,140,255,.08);
+  transition:all 0.3s ease;
+}
+.bact-icon-btn:hover {
+  background:rgba(12,28,60,.80);
+  border-color:rgba(120,200,255,.40);
+  box-shadow:0 0 0 1px rgba(120,200,255,.10), 0 0 18px rgba(60,140,255,.24);
+  color:rgba(180,230,255,.95);
+}
+.bact-icon-btn.btn-active {
+  border-color:rgba(120,200,255,.35);
+  color:rgba(160,220,255,.90);
+  box-shadow:0 0 0 1px rgba(120,200,255,.10), 0 0 16px rgba(60,140,255,.22);
+}
+.a11y-toggle {
+  top:clamp(20px, 5vh, 50px);
+}
+
+.zoom-out-toggle {
+  top:clamp(64px, 12vh, 94px);
+  opacity:0; pointer-events:none;
+}
+#bacterium-view.active .zoom-out-toggle { opacity:1; pointer-events:auto; }
+.zoom-out-toggle.active { border-color:rgba(120,200,255,.35); color:rgba(160,220,255,.90); }
+
+.restart-toggle {
+  top:clamp(108px, 19vh, 138px);
+  opacity:0; pointer-events:none;
+}
+#bacterium-view.active .restart-toggle { opacity:1; pointer-events:auto; }
+
+.grain-toggle {
+  top:clamp(152px, 26vh, 182px);
+  opacity:0; pointer-events:none;
+}
+#bacterium-view.active .grain-toggle { opacity:1; pointer-events:auto; }
+.grain-toggle.grain-on { border-color:rgba(120,200,255,.35); color:rgba(160,220,255,.90); }
+
+.bacterium-stage {
+  transition: transform 0.5s ease;
+}
+/* Multi-level zoom: cycle through 0.82 → 0.62 → 0.42 on repeated clicks */
+.bacterium-stage.zoom-level-1 { transform: scale(0.82); }
+.bacterium-stage.zoom-level-2 { transform: scale(0.62); }
+.bacterium-stage.zoom-level-3 { transform: scale(0.42); }
+/* Legacy alias kept for any residual references */
+.bacterium-stage.zoomed-out   { transform: scale(0.82); }
+.high-contrast .bacterium {
+  border:2px solid rgba(255,255,255,.75);
+  box-shadow: inset 0 0 30px rgba(255,255,255,.12), 0 0 0 1px rgba(255,255,255,.3);
+}
+.high-contrast .label-text { background:rgba(0,0,0,.9); border:2px solid rgba(255,255,255,.6); color:#fff; }
+.high-contrast .nucleoid .dna-strand-a { stroke:rgba(255,230,0,.9); stroke-width:2px; }
+.high-contrast .nucleoid .dna-strand-b { stroke:rgba(230,210,0,.75); stroke-width:1.6px; }
+.high-contrast .nucleoid .dna-loop     { stroke:rgba(255,220,0,.6);  stroke-width:1.4px; }
+
+/* === PARALLAX FOR MOBILE === */
+@media (hover:none) and (pointer:coarse) {
+  .cosmic-dust { animation-duration:20s !important; }
+  .bg-particle { animation-duration:15s !important; }
+}
+
+/* ====== ROTATE TO IMPACT BUTTON ====== */
+#rotate-btn {
+  position: fixed;
+  bottom: clamp(80px, 14vh, 120px);
+  right: clamp(16px, 4vw, 32px);
+  z-index: 60;
+  width:44px; height:44px; padding:0;
+  border-radius: 50%;
+  border: 1px solid rgba(120,200,255,.18);
+  background: rgba(8,18,36,.55);
+  color: rgba(140,210,255,.80);
+  cursor: pointer;
+  font-size: 20px; line-height:1;
+  display: none;
+  justify-content:center; align-items:center;
+  backdrop-filter: blur(12px);
+  box-shadow:0 0 0 1px rgba(120,200,255,.06), 0 0 18px rgba(80,160,255,.10);
+  transition: all .3s ease, opacity 0.6s ease;
+}
+#rotate-btn.visible { display: flex; }
+#rotate-btn:hover {
+  background: rgba(12,28,56,.80);
+  border-color: rgba(120,200,255,.45);
+  box-shadow:0 0 0 1px rgba(120,200,255,.12), 0 0 22px rgba(80,160,255,.28);
+  color:rgba(180,230,255,1);
+}
+#rotate-btn.facing {
+  border-color: rgba(120,200,255,.22);
+  background: rgba(8,18,36,.55);
+  color: rgba(140,210,255,.60);
+}
+.zoom-lens {
+  position: fixed;
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  overflow: hidden;
+  z-index: 120;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.2);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  will-change: transform, opacity;
+}
+.zoom-lens.visible {
+  opacity: 1;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Glass rim — neutral white/silver, no blue glow */
+.lens-glass-rim {
+  position: absolute; inset: 0; border-radius: 50%; z-index: 30;
+  box-shadow:
+    inset 0 0 0 3px rgba(255,255,255,0.22),
+    inset 0 0 0 6px rgba(200,200,200,0.06),
+    inset 0 6px 20px rgba(255,255,255,0.12),
+    0 0 0 2px rgba(60,60,60,0.5),
+    0 0 18px rgba(0,0,0,0.6);
+  pointer-events: none;
+}
+/* Scan lines inside lens — subtle black only */
+.lens-scanlines {
+  position: absolute; inset: 0; border-radius: 50%; z-index: 25;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 3px,
+    rgba(0,0,0,0.06) 3px,
+    rgba(0,0,0,0.06) 4px
+  );
+  pointer-events: none;
+}
+/* Crosshair — remove blue, use very faint warm white */
+.lens-crosshair {
+  position: absolute; inset: 0; z-index: 28; pointer-events: none;
+  background:
+    linear-gradient(rgba(255,240,220,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,240,220,0.07) 1px, transparent 1px);
+  background-size: 100% 50%, 50% 100%;
+}
+
+/* Layers inside lens */
+.lens-layer {
+  position: absolute; inset: 0; border-radius: 50%;
+  opacity: 0; transition: opacity 0.6s ease;
+}
+.lens-layer.visible { opacity: 1; }
+
+/* 10x — crater surface */
+.lens-crater-view {
+  background:
+    radial-gradient(circle at 50% 55%, #1a0a00 0%, #2d1a08 25%, #4a3020 45%, #3a2010 65%, #1a0800 100%);
+}
+.lens-crater-view::before {
+  content: '';
+  position: absolute; inset: 0; border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(0,0,0,0.8) 0%, transparent 45%),
+    radial-gradient(circle at 30% 40%, #2a1a08 8%, transparent 9%),
+    radial-gradient(circle at 65% 55%, #1a0a00 6%, transparent 7%),
+    radial-gradient(circle at 45% 65%, #2a1808 5%, transparent 6%),
+    radial-gradient(circle at 70% 35%, rgba(255,80,0,0.15) 0%, transparent 30%);
+}
+.lens-crater-view::after {
+  content: '';
+  position: absolute; inset: 20%; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,60,0,0.2) 0%, rgba(180,40,0,0.1) 40%, transparent 70%);
+  animation: craterGlow 2s ease-in-out infinite;
+}
+@keyframes craterGlow {
+  0%,100% { opacity: 0.5; transform: scale(1); }
+  50%      { opacity: 1;   transform: scale(1.1); }
+}
+
+/* 20x — asteroid fragment + smoke */
+.lens-asteroid-view {
+  background: radial-gradient(circle at 50% 60%, #0d0500 0%, #1a0a02 50%, #0a0300 100%);
+  overflow: hidden;
+  border-radius: 50%; /* must be paired with overflow:hidden to clip children as circle */
+}
+/* wrapper holds the rock + flame sparks, clipped by parent lens circle */
+.lens-asteroid-wrap {
+  position: absolute;
+  left: 50%; top: 58%;
+  width: 80px; height: 80px;
+  transform: translate(-50%, -50%);
+  overflow: visible;
+  /* no clip here — parent .lens-asteroid-view clips to circle */
+}
+.lens-asteroid-rock {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 48px; height: 40px;
+  transform: translate(-50%, -50%);
+  border-radius: 48% 52% 46% 54% / 55% 45% 55% 45%;
+  background: radial-gradient(circle at 38% 38%, #7a4a28, #4a2210 40%, #240c04 75%, #0e0400);
+  box-shadow: 0 0 12px rgba(180,50,0,0.4), 0 0 28px rgba(120,30,0,0.25), inset -5px -5px 12px rgba(0,0,0,0.7);
+  animation: rockPulse 2.4s ease-in-out infinite;
+}
+/* subtle surface highlight only — no overflowing rectangle */
+.lens-asteroid-rock::after {
+  content: '';
+  position: absolute;
+  left: 18%; top: 14%;
+  width: 32%; height: 24%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(160,100,55,0.45), transparent 70%);
+}
+/* flame sparks — small glowing dots, absolutely positioned inside the wrap */
+.lens-flame-dot {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: flameDotAnim 1.2s ease-in-out infinite alternate;
+}
+@keyframes flameDotAnim {
+  0%   { opacity: 0.5; transform: translateY(0) scale(0.8); }
+  100% { opacity: 1.0; transform: translateY(-6px) scale(1.2); }
+}
+@keyframes rockPulse {
+  0%,100% { box-shadow: 0 0 12px rgba(180,50,0,0.4), 0 0 28px rgba(120,30,0,0.25), inset -5px -5px 12px rgba(0,0,0,0.7); }
+  50%      { box-shadow: 0 0 18px rgba(200,60,0,0.6), 0 0 38px rgba(140,40,0,0.35), inset -5px -5px 12px rgba(0,0,0,0.7); }
+}
+.smoke-container {
+  position: absolute; inset: 0; border-radius: 50%; overflow: hidden;
+}
+.smoke-puff {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(160,130,100,0.7) 0%, rgba(80,60,40,0.4) 50%, transparent 70%);
+  animation: smokeDrift linear infinite;
+  pointer-events: none;
+}
+@keyframes smokeDrift {
+  0%   { transform: translateY(0)    scale(0.3); opacity: 0.8; }
+  40%  { opacity: 0.6; }
+  100% { transform: translateY(-90px) scale(1.8); opacity: 0; }
+}
+
+/* 50x — bacterium inside lens */
+.lens-bacteria-view {
+  background: radial-gradient(ellipse at center, #0a1628 0%, #000510 60%, #000 100%);
+  display: flex; align-items: center; justify-content: center;
+}
+.lens-bacterium {
+  width: 110px; height: 46px;
+  border-radius: 40px;
+  background:
+    radial-gradient(ellipse at 32% 30%,
+      rgba(195,185,160,.60) 0%,
+      rgba(145,135,110,.55) 30%,
+      rgba( 90, 85, 72,.58) 62%,
+      rgba( 40, 36, 28,.68) 100%);
+  border: 1px solid rgba(80,72,55,.5);
+  box-shadow: inset 3px 3px 10px rgba(255,250,235,.07), inset -4px -5px 12px rgba(0,0,0,.4), 0 3px 10px rgba(0,0,0,.5);
+  position: relative; animation: bacteriumFloat 4s ease-in-out infinite;
+}
+.lens-bacterium::before {
+  content: '';
+  position: absolute; inset: -3px; border-radius: 44px;
+  border: 1px solid rgba(80,70,50,.3);
+}
+.lens-bacterium::after {
+  content: '';
+  position: absolute; left: 20%; top: 25%; width: 60%; height: 50%;
+  border-radius: 40%;
+  background: repeating-linear-gradient(48deg, rgba(185,162,72,.32) 0px, rgba(185,162,72,.32) 1px, transparent 1px, transparent 5px);
+}
+.lens-bacteria-label {
+  position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+  font-size: 11px; color: rgba(160,220,240,0.21); letter-spacing: 2px;
+  text-transform: uppercase; white-space: nowrap; font-family: 'Courier New', monospace;
+  animation: hudBlink 1.4s step-end infinite;
+}
+.lens-mag-label {
+  position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+  font-size: 13px; font-family: 'Courier New', monospace;
+  color: rgba(160,220,255,0.24); letter-spacing: 3px;
+  z-index: 29; text-shadow: 0 0 8px rgba(100,180,255,0.18);
+  pointer-events: none;
+}
+
+/* ====== ZOOM SLIDER PANEL ====== */
+.zoom-slider-panel {
+  position: fixed; bottom: -120px; left: 50%; transform: translateX(-50%);
+  width: clamp(280px, 80vw, 480px);
+  z-index: 130; transition: bottom 0.6s cubic-bezier(0.34,1.56,0.64,1);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.zoom-slider-panel.visible { bottom: clamp(24px, 5vh, 48px); }
+
+.zoom-slider-track {
+  position: relative; width: 100%; height: 6px;
+  background: rgba(255,255,255,0.1); border-radius: 3px;
+  border: 1px solid rgba(160,220,255,0.06);
+}
+.zoom-slider-fill {
+  position: absolute; left: 0; top: 0; height: 100%;
+  background: linear-gradient(90deg, rgba(255,140,60,0.8), rgba(100,200,255,0.4));
+  border-radius: 3px; width: 2%; pointer-events: none;
+  transition: width 0.05s linear;
+  box-shadow: 0 0 8px rgba(160,200,255,0.12);
+}
+.zoom-slider {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  opacity: 0; cursor: pointer; margin: 0;
+  -webkit-appearance: none; appearance: none;
+  height: 28px; top: -11px;
+}
+.zoom-ticks {
+  width: 100%; display: flex; justify-content: space-between;
+  padding: 0 2px;
+}
+.zoom-tick {
+  font-size: 11px; color: rgba(160,220,255,0.15);
+  font-family: 'Courier New', monospace; letter-spacing: 1px;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+.zoom-tick.active {
+  color: rgba(255,200,100,0.9);
+  text-shadow: 0 0 8px rgba(255,180,60,0.6);
+}
+.zoom-hint {
+  font-size: 12px; color: rgba(160,220,255,0.12); letter-spacing: 2px;
+  text-transform: uppercase; animation: hudBlink 2s step-end infinite;
+}
+
+/* ====== STORY STEPPER ====== */
+#story-stepper {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+}
+.stepper-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.45);
+  background: transparent;
+  transition: background 0.4s ease, border-color 0.4s ease, transform 0.4s ease;
+}
+.stepper-dot.active {
+  background: rgba(255,255,255,0.90);
+  border-color: rgba(255,255,255,0.90);
+  transform: scale(1.25);
+}
