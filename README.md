@@ -8,6 +8,11 @@
 
 ---
 
+><p align="center"><em> Project Dedicated to Sriman Narayana</em>
+</p>
+
+---
+
 ✨ **Features**
 
 - 🧬 Interactive Cell Anatomy — Explore prokaryotic cell structures.
