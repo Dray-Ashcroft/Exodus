@@ -6,7 +6,7 @@
 
 <p align="center"><em>Interactive Panspermia and Astrobiology Visualizer</em></p>
 
-<p align="center"><a href="https://exodus.stark-kodex.workers.dev"><strong>Launch the Simulator</strong></a></p>
+<p align="center"><a href="https://exodus.stark-kodex.workers.dev"><strong>Explore Exodus</strong></a></p>
 
 <p align="center">
   <a href="#about">About</a> ·
