@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="EXODUS: an interactive 3D visualization of the panspermia hypothesis, from comet impact to an archaeon cell.">
+<meta name="theme-color" content="#05090f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%2305090f'/%3E%3Cpath d='M12 52 40 24' stroke='%23FFB68B' stroke-width='5' stroke-linecap='round' opacity='.6'/%3E%3Ccircle cx='42' cy='22' r='9' fill='%23FFB68B'/%3E%3C/svg%3E">
+<title>EXODUS · Panspermia Hypothesis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="story-stepper">
+  <div class="stepper-dot active" data-step="0"></div>
+  <div class="stepper-dot" data-step="1"></div>
+  <div class="stepper-dot" data-step="2"></div>
+  <div class="stepper-dot" data-step="3"></div>
+</div>
+<div id="scene" style="position:relative;width:100%;height:100%;">
+  <div class="title-card">
+    <div class="title">Panspermia Hypothesis</div>
+    <div class="subtitle">Biology | Origin of Life from Space</div>
+    <button class="credits-btn" id="credits-btn" aria-label="Credits" title="Credits">&copy;</button>
+  </div>
+
+  <canvas id="stars-canvas"></canvas>
+  <canvas id="space-canvas"></canvas>
+
+  <div id="impact-flash"></div>
+  <div id="screen-flash"></div>
+
+  <button class="md-filled-btn launch-btn loading" id="originate-btn" title="Launch the comet" disabled><svg class="md-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="17" cy="7" r="4"/><path d="M14.2 9.8 4 20l-1-1 10.2-10.2zM12.5 7.6 5 11l-.6-1 7.6-3.4zM16.4 11.5 13 19l-1-.6 3.4-7.6z" opacity=".7"/></svg><span class="launch-text">Launch Comet</span></button>
+  <div id="load-status">Loading 3D models</div>
+  <div id="kbd-hint"><kbd>Space</kbd> launch · <kbd>←</kbd><kbd>→</kbd> zoom · <kbd>R</kbd> restart</div>
+  <button id="rotate-btn" class="md-ext-fab" title="Turn the impact site towards you"><span class="ico-a"><svg class="md-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></span><span class="ico-b"><svg class="md-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></span><span class="fab-label">Impact site</span></button>
+
+  <!-- ====== ZOOM LENS + SLIDER ====== -->
+  <div id="zoom-lens" class="zoom-lens">
+    <div class="lens-glass-rim"></div>
+    <div class="lens-scanlines"></div>
+    <div class="lens-layer lens-crater-view" id="lens-crater-view"></div>
+    <div class="lens-layer lens-asteroid-view" id="lens-asteroid-view"></div>
+    <div class="lens-layer lens-bacteria-view" id="lens-bacteria-view"></div>
+    <canvas id="lens-canvas" class="lens-layer"></canvas>
+    <div class="lens-layer lens-smoke-layer" id="lens-smoke-layer">
+      <div class="smoke-container" id="smoke-container"></div>
+    </div>
+    <div class="lens-layer lens-bacteria-tag" id="lens-bacteria-tag">
+      <div class="lens-bacteria-label">Prokaryote detected</div>
+    </div>
+    <div class="lens-mag-label" id="lens-mag-label">1x</div>
+    <div class="lens-crosshair"></div>
+  </div>
+
+  <div id="zoom-slider-panel" class="zoom-slider-panel">
+    <div class="zs-head">
+      <span class="zs-label">Magnification</span>
+      <span class="zs-value" id="zs-value">1x</span>
+    </div>
+    <div class="zs-track">
+      <input type="range" id="zoom-slider" class="zoom-slider" min="1" max="50" value="1" step="0.5" aria-label="Magnification">
+      <div class="zoom-ticks">
+        <button class="zoom-tick" data-val="1"  style="--p:0">1x</button>
+        <button class="zoom-tick" data-val="10" style="--p:0.1837">10x</button>
+        <button class="zoom-tick" data-val="20" style="--p:0.3878">20x</button>
+        <button class="zoom-tick" data-val="50" style="--p:1">50x</button>
+      </div>
+    </div>
+    <div class="zoom-hint" id="zoom-hint">Slide or tap a stop to zoom into the impact site</div>
+  </div>
+
+  <div class="zoom-overlay" id="zoom-overlay"></div>
+  <div class="hud-overlay" id="hud-overlay">
+    <div class="hud-radar"></div>
+    <div class="hud-text">Threat Detected</div>
+  </div>
+</div>
+
+
+
+<div id="bacterium-view">
+  <canvas id="rock-canvas"></canvas>
+  <div class="pore-cavity" id="pore-cavity"></div>
+  <div class="sem-overlay" id="sem-overlay">
+    <div class="sem-grid"></div>
+    <div class="sem-vignette"></div>
+    <div class="sem-chromatic"></div>
+    <canvas id="em-grain-canvas"></canvas>
+    <div class="sem-mag-counter md-chip" id="sem-mag"><span class="chip-dot"></span>50,000× · Darkfield</div>
+    <div class="sem-focus-ring"></div>
+  </div>
+
+  <canvas id="cell-canvas"></canvas>
+  <div id="cell-labels"></div>
+
+
+  <div class="typewriter-container">
+    <div class="typewriter-text" id="typewriter"></div>
+  </div>
+
+  <div class="scale-bar" id="scale-bar">
+    <div class="scale-line" id="scale-line"></div>
+    <span class="scale-text" id="scale-text">1 µm</span>
+  </div>
+
+  <div id="hotspot-info-card">
+    <button class="card-close md-icon-btn" id="card-close" aria-label="Close"><svg class="md-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+    <div class="card-name" id="card-name"></div>
+    <div class="card-desc" id="card-desc"></div>
+  </div>
+
+    <div class="tour-bubble" id="tour-bubble" style="display:none;"></div>
+  <div id="science-note">Panspermia is a hypothesis, not an established fact. Scale and structures are simplified.</div>
+
+  <nav class="md-toolbar" id="cell-toolbar" aria-label="Cell view controls">
+    <button class="md-icon-btn tb-btn" id="tour-btn" aria-label="Guided tour" data-tip="Guided tour"><svg class="md-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 16.5l6-4.5-6-4.5v9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></button>
+    <button class="md-icon-btn tb-btn" id="zoom-in-btn" aria-label="Zoom in" data-tip="Zoom in"><svg class="md-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
+    <button class="md-icon-btn tb-btn" id="zoom-out-toggle" aria-label="Zoom out" data-tip="Zoom out"><svg class="md-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 13H5v-2h14v2z"/></svg></button>
+    <button class="md-icon-btn tb-btn" id="reset-view-btn" aria-label="Reset view" data-tip="Reset view"><svg class="md-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 15H3v4c0 1.1.9 2 2 2h4v-2H5v-4zM5 5h4V3H5c-1.1 0-2 .9-2 2v4h2V5zm14-2h-4v2h4v4h2V5c0-1.1-.9-2-2-2zm0 16h-4v2h4c1.1 0 2-.9 2-2v-4h-2v4zM12 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></button>
+    <span class="tb-divider"></span>
+    <button class="md-icon-btn tb-btn toggle" id="a11y-toggle" aria-label="High contrast" data-tip="High contrast"><svg class="md-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 17.93V4.07A8 8 0 0 1 13 19.93z"/></svg></button>
+    <button class="md-icon-btn tb-btn toggle" id="grain-toggle" aria-label="Grain" data-tip="Grain"><svg class="md-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="6" r="1.6"/><circle cx="12" cy="5" r="1.2"/><circle cx="18" cy="7" r="1.6"/><circle cx="8" cy="12" r="1.2"/><circle cx="14" cy="11" r="1.6"/><circle cx="19" cy="14" r="1.2"/><circle cx="5" cy="18" r="1.2"/><circle cx="11" cy="17" r="1.6"/><circle cx="17" cy="19" r="1.2"/></svg></button>
+    <span class="tb-divider"></span>
+    <button class="md-icon-btn tb-btn credits-tb" id="credits-tb-btn" aria-label="Credits" data-tip="Credits"><span class="copy-glyph">&copy;</span></button>
+    <button class="md-icon-btn tb-btn" id="restart-toggle" aria-label="Restart" data-tip="Restart"><svg class="md-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></button>
+  </nav>
+</div>
+
+<div id="credits-modal" role="dialog" aria-modal="true" aria-labelledby="credits-title" hidden>
+  <div class="credits-card">
+    <button class="md-icon-btn credits-close" id="credits-close" aria-label="Close"><svg class="md-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+    <div class="credits-eyebrow">EXODUS</div>
+    <h2 id="credits-title">Credits</h2>
+
+    <section>
+      <h3>Authors</h3>
+      <div class="credit-row">
+        <span class="credit-role">Project Designer</span>
+        <span class="credit-name">Aditya Sai Prasad</span>
+        <span class="credit-meta">MSc. Agri Entomology, ASRB NET</span>
+      </div>
+    </section>
+
+    <section>
+      <h3>3D Models</h3>
+      <div class="credit-row"><span class="credit-role">Earth</span><span class="credit-name"><a href="https://sketchfab.com/3d-models/earth-4de1bcbd22a444abb4f089b9b78ec96a" target="_blank" rel="noopener">SebastianSosnowski</a></span></div>
+      <div class="credit-row"><span class="credit-role">Comet rock</span><span class="credit-name"><a href="https://sketchfab.com/3d-models/asteroid-80a70567fb2a42df836e6d70204e0b68" target="_blank" rel="noopener">admone</a></span></div>
+      <div class="credit-row"><span class="credit-role">Crater fire</span><span class="credit-name"><a href="https://sketchfab.com/3d-models/bonfire-dc8010abcb3649708aabe29f3f5eafe7" target="_blank" rel="noopener">raptapantallas</a></span></div>
+      <div class="credit-row"><span class="credit-role">Archaea</span><span class="credit-name"><a href="https://sketchfab.com/3d-models/archaea-eb47b67df9ca4c47b681716d572e3177" target="_blank" rel="noopener">arloopa</a></span></div>
+      <p class="credit-note">All models licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>, compressed and adapted for this project.</p>
+    </section>
+
+    <p class="credit-foot">Code under GNU GPL-3.0 · three.js (MIT) · IBM Plex Sans and Roboto (OFL)</p>
+  </div>
+</div>
+
+<script type="importmap">
+{ "imports": {
+    "three": "./vendor/three/build/three.module.min.js",
+    "three/addons/": "./vendor/three/examples/jsm/"
+} }
+</script>
+<script src="script.js"></script>
+<script>
+  setTimeout(function () {
+    if (window.Exodus3D) return;
+    var el = document.getElementById('load-status');
+    if (el) { el.classList.add('error'); el.textContent = 'Could not load three.js. Check the internet connection or the vendor/ folder.'; }
+  }, 15000);
+</script>
+<script type="module" src="scene3d.js"></script>
+</body>
+</html>
